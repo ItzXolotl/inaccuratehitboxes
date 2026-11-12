@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inaccurate Hitboxes – a Minecraft mod</title>
+<meta name="description" content="Inaccurate Hitboxes is a Minecraft mod that lets you change the hitbox of any entity.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0708;
+    --cream: #e8dcd6;
+    --muted: #8f7f7c;
+    --line: #2b1c1f;
+    --red: #e0204a;
+    --deep: #3a0a14;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; color: var(--cream);
+    font: 400 16px/1.6 "Space Grotesk", system-ui, sans-serif;
+    background:
+      radial-gradient(ellipse 70% 60% at 80% 20%, rgba(150,10,40,.28), transparent 70%),
+      var(--bg);
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1160px; margin: 0 auto; padding: 0 32px; }
+  .label { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+  .serif { font-family: "Instrument Serif", Georgia, serif; font-weight: 400; }
+
+  /* header */
+  header { border-bottom: 1px solid var(--line); }
+  header .wrap { display: flex; align-items: center; justify-content: space-between; height: 76px; gap: 16px; }
+  .brand { font-weight: 500; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+  .dot { width: 26px; height: 26px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ff4a6b, var(--red) 55%, var(--deep)); }
+  nav { display: flex; gap: 28px; }
+  nav a { text-decoration: none; }
+  nav a:hover { color: var(--cream); }
+
+  .btn {
+    display: inline-block; font: 500 12px "Space Grotesk", sans-serif; letter-spacing: .16em; text-transform: uppercase;
+    text-decoration: none; cursor: pointer; padding: 17px 24px; border: 1px solid var(--cream);
+    background: var(--cream); color: var(--bg);
+  }
+  .btn.ghost { background: transparent; color: var(--cream); border-color: #4a3a3c; }
+  .btn:hover { background: #fff; color: var(--bg); border-color: #fff; }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+  .btn.shake { animation: shake .35s; }
+  @keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+  /* hero */
+  .hero { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center; padding: 56px 0 88px; }
+  .hero .label.top { margin: 0 0 40px; }
+  h1 { font-size: clamp(56px, 8vw, 104px); line-height: .92; margin: 0 0 24px; letter-spacing: -.02em; }
+  .tagline { font-size: 24px; font-style: italic; color: var(--muted); margin: 0 0 40px; max-width: 28ch; line-height: 1.2; }
+  .rows { max-width: 520px; margin-bottom: 36px; border-top: 1px solid var(--line); }
+  .row { display: flex; align-items: center; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+  .row::after { content: ""; order: 1; flex: 1; height: 1px; background: var(--line); }
+  .row .label { order: 0; }
+  .row span:last-child { order: 2; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  #status { margin: 14px 0 0; min-height: 1.6em; color: var(--red); font-weight: 500; }
+
+  /* orb with demo */
+  .orb-col { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+  .orb-wrap { position: relative; width: min(100%, 460px); aspect-ratio: 1; }
+  .orb-wrap::before { content: ""; position: absolute; inset: -14%; border: 1px solid #3a2326; border-radius: 50%; }
+  .orb {
+    position: absolute; inset: 0; border-radius: 50%; overflow: hidden;
+    background: linear-gradient(135deg, #ff1f4e 0%, #b30f33 45%, #4b0a18 100%);
+    box-shadow: 0 0 120px rgba(224,32,74,.28);
+  }
+  .orb::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle, rgba(10,4,5,.85) 1.1px, transparent 1.6px) 0 0 / 6px 6px; }
+  .orb svg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; }
+  .controls { width: min(100%, 420px); display: grid; gap: 8px; }
+  .controls label { display: flex; justify-content: space-between; }
+  .controls output { color: var(--cream); letter-spacing: .1em; }
+  input[type=range] { width: 100%; accent-color: var(--red); }
+
+  /* sections */
+  section { border-top: 1px solid var(--line); padding: 72px 0; }
+  section .label.head { margin: 0 0 32px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); }
+  .cell { padding: 32px 28px 36px; border-right: 1px solid var(--line); }
+  .cell:last-child { border-right: 0; }
+  h2 { font-size: 34px; line-height: 1.1; margin: 0 0 12px; }
+  .cell p, .text p { margin: 0; color: var(--muted); }
+  .text { max-width: 60ch; }
+  .text h2 { font-size: clamp(36px, 5vw, 56px); }
+  .text p { margin-bottom: 14px; }
+  .text .btn { margin-top: 14px; }
+  em.tag { font-size: 15px; color: var(--red); }
+
+  footer { border-top: 1px solid var(--line); padding: 32px 0 48px; color: var(--muted); font-size: 14px; }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; }
+    .grid { grid-template-columns: 1fr; }
+    .cell { border-right: 0; border-bottom: 1px solid var(--line); }
+    .cell:last-child { border-bottom: 0; }
+    nav { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .btn.shake { animation: none; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="dot"></span>Inaccurate Hitboxes</a>
+    <nav class="label">
+      <a href="#features">Features</a>
+      <a href="#fair-play">Fair play</a>
+      <a href="#download">Download</a>
+    </nav>
+    <a class="btn" href="https://itzxolotl.github.io" target="_blank" rel="noopener">Main website</a>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap hero">
+    <div>
+      <p class="label top">Minecraft · Mod · In development</p>
+      <h1 class="serif">Inaccurate Hitboxes</h1>
+      <p class="tagline serif">change the hitbox of any entity.</p>
+
+      <div class="rows">
+        <div class="row"><span class="label">Type</span><span>Minecraft mod</span></div>
+        <div class="row"><span class="label">Status</span><span>In development</span></div>
+        <div class="row"><span class="label">Focus</span><span>Custom hitboxes</span></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" id="download" type="button">Download</button>
+        <a class="btn ghost" href="https://itzxolotl.github.io" target="_blank" rel="noopener">Meet the creator</a>
+      </div>
+      <p id="status" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="orb-col">
+      <div class="orb-wrap">
+        <div class="orb">
+          <svg viewBox="0 0 320 320" aria-label="A Minecraft zombie with an adjustable hitbox outline">
+            <image href="data:image/webp;base64,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" x="112.5" y="80" width="95" height="160" preserveAspectRatio="xMidYMid meet"/>
+            <rect id="hb" fill="none" stroke="#fff" stroke-width="2.5"/>
+            <line id="eye" stroke="#fff" stroke-width="2" stroke-dasharray="5 4"/>
+          </svg>
+        </div>
+      </div>
+      <div class="controls label">
+        <label for="w">Width <output id="wo"></output></label>
+        <input id="w" type="range" min="0.2" max="2.4" step="0.1" value="1.4">
+        <label for="h">Height <output id="ho"></output></label>
+        <input id="h" type="range" min="0.2" max="2.8" step="0.1" value="1.0">
+      </div>
+    </div>
+  </div>
+
+  <section id="features">
+    <div class="wrap">
+      <p class="label head">What it does</p>
+      <div class="grid">
+        <div class="cell"><h2 class="serif">Any entity</h2><p>Pick a mob, a player, or anything else in the game and give it a new hitbox size.</p></div>
+        <div class="cell"><h2 class="serif">Hitbox only</h2><p>The model and animations stay as they are. Only the box that decides what gets hit changes.</p></div>
+        <div class="cell"><h2 class="serif">Made for fun</h2><p>Silly mobs, odd minigames, mapmaking, and testing how the game reacts to strange sizes.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="fair-play">
+    <div class="wrap text">
+      <p class="label head">Fair play</p>
+      <h2 class="serif">Not a hacking tool.</h2>
+      <p>Inaccurate Hitboxes is not made for cheating. It's a project built for experimenting, creating, and having a laugh.</p>
+      <p>Please don't use it to gain an advantage on servers that don't allow it, and follow the rules of any server you join.</p>
+    </div>
+  </section>
+
+  <section id="download">
+    <div class="wrap text">
+      <p class="label head">Coming soon — Download</p>
+      <h2 class="serif">Get the mod.</h2>
+      <p>The mod is still in development, so downloads aren't available yet.</p>
+      <button class="btn" id="download2" type="button">Download</button>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">Made by <a href="https://itzxolotl.github.io" target="_blank" rel="noopener">itzxolotl</a>. Independent project, not affiliated with or endorsed by Mojang or Microsoft. Minecraft is a trademark of Mojang AB.</div>
+</footer>
+
+<script>
+  const status = document.getElementById('status');
+  let timer;
+  function comingSoon(btn) {
+    status.textContent = 'Coming soon!';
+    btn.classList.remove('shake'); void btn.offsetWidth; btn.classList.add('shake');
+    clearTimeout(timer);
+    timer = setTimeout(() => { status.textContent = ''; }, 4000);
+  }
+  document.querySelectorAll('#download, #download2').forEach(b => b.addEventListener('click', () => comingSoon(b)));
+
+  // Hitbox demo: 1 block = 82 SVG units, feet at y=240, centered at x=160
+  const w = document.getElementById('w'), h = document.getElementById('h');
+  const hb = document.getElementById('hb'), eye = document.getElementById('eye');
+  function draw() {
+    const bw = w.value * 82, bh = h.value * 82, cx = 160, ground = 240;
+    document.getElementById('wo').textContent = (+w.value).toFixed(1);
+    document.getElementById('ho').textContent = (+h.value).toFixed(1);
+    hb.setAttribute('x', cx - bw / 2); hb.setAttribute('y', ground - bh);
+    hb.setAttribute('width', bw); hb.setAttribute('height', bh);
+    const ey = ground - bh * 0.9;
+    eye.setAttribute('x1', cx - bw / 2); eye.setAttribute('x2', cx + bw / 2);
+    eye.setAttribute('y1', ey); eye.setAttribute('y2', ey);
+  }
+  w.addEventListener('input', draw); h.addEventListener('input', draw); draw();
+</script>
+</body>
+</html>
